@@ -15,6 +15,6 @@ body {
 .footer {
     text-align: center;
     font-size: 0.9em;
-    color: darkviolet;
+    color: darkviolet !important;
     margin-top: 40px;
 }
