@@ -13,6 +13,7 @@ from src.data.db import SessionDep
 
 
 
+
 router    = APIRouter(prefix="/products")
 templates = Jinja2Templates(directory=config.root_dir / "src/templates")
 
@@ -28,29 +29,52 @@ async def get_products(session: SessionDep) -> List[ProductRead]:
         products: List[Product] = session.exec(statement).all()
         return products
 
+
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Error retrieving products: {e}")
 
 
+
+
 # POST - Products
 @router.post("/", response_model=ProductRead, status_code=201)
-async def add_product(session: SessionDep, product: ProductCreate) -> ProductRead:
+async def add_product(session: SessionDep, new_product: ProductCreate) -> ProductRead:
     """
     """
-    try: 
-        new_product = Product.model_validate(product)
+    try:
+        # Search if the product's name and price are already existing in DBs
+        statement = select(Product).where(
+            Product.name  == new_product.name,
+            Product.price == new_product.price 
+        )
+        existing_product = session.exec(statement).first()
 
-        session.add(new_product)
+        if existing_product:
+            existing_product.quantity += new_product.quantity  
+
+            session.add(existing_product)
+            session.commit()
+            session.refresh(existing_product)
+
+            return ProductRead.model_validate(existing_product)
+
+        # else add new product
+        product = Product.model_validate(new_product)
+
+        session.add(product)
         session.commit()
-        session.refresh(new_product)
+        session.refresh(product)
+        
+        return ProductRead.model_validate(product)
 
-        return ProductRead.model_validate(new_product)
 
     except Exception as e:
         session.rollback()
-        return HTTPException(status_code=500, detail=f"Error adding product: {e}")
+        raise HTTPException(status_code=500, detail=f"Error adding product: {e}")
     
+
+
 
 # DELETE - Products
 @router.delete("/", response_model="", status_code=201)
@@ -64,9 +88,15 @@ async def remove_all_product(session: SessionDep) -> str:
 
         return "All Products deleted"
 
+
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Error deleting all products: {e}")
 
 
-# DELETE - Products
+
+
+# DELETE - /products/{name} Products by name
+@router.delete("/", response_model="", status_code=201)
+async def remove_product(session: SessionDep, name: str):
+    pass
