@@ -15,7 +15,7 @@ sqlite_file_name = config.root_dir / "src/data/products.db"
 sqlite_url       = f"sqlite:///{sqlite_file_name}"
 
 connect_args = {"check_same_thread": False}
-engine       = create_engine(sqlite_url, connect_args=connect_args, echo=True)     # echo=True shows the SQL query in the output
+engine       = create_engine(sqlite_url, connect_args=connect_args, echo=True)
 
 
 

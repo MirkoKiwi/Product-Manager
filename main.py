@@ -21,12 +21,13 @@ from src.data.db import init_database
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # on start
-    print("Init Database")
+    
+    print("\033[36m[DB] \033[0mInit Database")
     init_database()
-    print("DB Initialized")
+    print("\033[36m[DB] \033[0mDB Initialized")
     yield
     # on close
-    print("Shutting down")
+    print("\033[36m[main] \033[0mShutting down")
 
 
 
