@@ -95,7 +95,32 @@ async def add_product(
         response_model = ProductRead,
         status_code = 201
 )
+async def product_update(
+    session: SessionDep,
+    product_update: ProductUpdate,
+    product_id: int
+) -> ProductRead:
+    """
+    """
+    db_product = session.get(Product, product_id)
+    if not db_product:
+        raise HTTPException(status_code=404, detail=f"Product {product_id} not found")
 
+    try:
+        update_data = product_update.model_dump(exclude_unset=True)
+
+        for key, value in  update_data.items():
+            setattr(db_product, key, value)
+
+        session.add(db_product)
+        session.commit()
+        session.refresh(db_product)
+
+        return ProductRead.model_validate(db_product)
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error updating product: {e}")
 
 
 
