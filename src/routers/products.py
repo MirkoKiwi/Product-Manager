@@ -28,7 +28,7 @@ templates = Jinja2Templates(directory=config.root_dir / "src/templates")
         )
 async def get_products(
     session:   SessionDep,
-    name:      str | None = Query(None, description="Search by name"),
+    name:      str     | None = Query(None, description="Search by name"),
     min_price: Decimal | None = Query(None, ge=0),
     max_price: Decimal | None = Query(None, ge=0)
 ) -> List[ProductRead]:
@@ -112,9 +112,9 @@ async def add_product(
         status_code = 200
 )
 async def product_update(
-    session: SessionDep,
+    session:        SessionDep,
     product_update: ProductUpdate,
-    product_id: int
+    product_id:     int
 ) -> ProductRead:
     """
     """
@@ -169,10 +169,10 @@ async def remove_all_product(session: SessionDep) -> str:
 @router.delete(
         "/{product_id}", 
         response_model = ProductRead, 
-        status_code = 200
+        status_code    = 200
         )
 async def remove_product(
-    session: SessionDep, 
+    session:    SessionDep, 
     product_id: int
 ) -> ProductRead:
     
