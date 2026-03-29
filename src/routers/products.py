@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, Path, Query, Form, Response
+from fastapi import APIRouter, HTTPException, Request, Path, Query, Form, Response, status
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -20,7 +20,11 @@ templates = Jinja2Templates(directory=config.root_dir / "src/templates")
 
 
 # GET - Products
-@router.get("/", response_model=List[ProductRead])
+@router.get(
+        "/", 
+        response_model = List[ProductRead],
+        status_code    = 200
+        )
 async def get_products(session: SessionDep) -> List[ProductRead]:
     """
     """
@@ -38,8 +42,15 @@ async def get_products(session: SessionDep) -> List[ProductRead]:
 
 
 # POST - Products
-@router.post("/", response_model=ProductRead, status_code=201)
-async def add_product(session: SessionDep, new_product: ProductCreate) -> ProductRead:
+@router.post(
+        "/", 
+        response_model = ProductRead, 
+        )
+async def add_product(
+    session:     SessionDep, 
+    new_product: ProductCreate,
+    response:    Response
+) -> ProductRead:
     """
     """
     try:
@@ -57,6 +68,7 @@ async def add_product(session: SessionDep, new_product: ProductCreate) -> Produc
             session.commit()
             session.refresh(existing_product)
 
+            response.status_code = status.HTTP_200_OK
             return ProductRead.model_validate(existing_product)
 
         # else add new product
@@ -66,18 +78,33 @@ async def add_product(session: SessionDep, new_product: ProductCreate) -> Produc
         session.commit()
         session.refresh(product)
         
+        response.status_code = status.HTTP_201_CREATED
         return ProductRead.model_validate(product)
 
 
     except Exception as e:
         session.rollback()
         raise HTTPException(status_code=500, detail=f"Error adding product: {e}")
-    
+
+
+
+
+# PATCH - Update by ID
+@router.patch(
+        "/{product_id}",
+        response_model = ProductRead,
+        status_code = 201
+)
+
+
 
 
 
 # DELETE - Products
-@router.delete("/", response_model="", status_code=201)
+@router.delete(
+        "/", 
+        status_code = 200
+        )
 async def remove_all_product(session: SessionDep) -> str:
     """
     """
@@ -96,7 +123,25 @@ async def remove_all_product(session: SessionDep) -> str:
 
 
 
-# DELETE - /products/{name} Products by name
-@router.delete("/", response_model="", status_code=201)
-async def remove_product(session: SessionDep, name: str):
-    pass
+# DELETE - /products/{product_id} Products by ID
+@router.delete("/{product_id}", response_model=ProductRead, status_code=200)
+async def remove_product(session: SessionDep, 
+                         product_id: int
+                        ) -> ProductRead:
+    
+    product = session.get(Product, product_id)
+
+    if not product:
+        raise HTTPException(status_code=404, detail=f"Product with ID {product_id} not found")
+    
+    try:
+        deleted_product = ProductRead.model_validate(product)
+
+        session.delete(product)
+        session.commit()
+
+        return deleted_product
+
+    except Exception as e:
+        session.rollback()
+        raise HTTPException(status_code=500, detail=f"Error deleting product: {e}")
