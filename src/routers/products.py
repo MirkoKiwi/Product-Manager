@@ -2,9 +2,10 @@ from fastapi import APIRouter, HTTPException, Request, Path, Query, Form, Respon
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
-from sqlmodel import Session, select, delete
+from sqlmodel import Session, select, delete, col, func
 
 from typing import List, Annotated
+from decimal import Decimal
 
 from src.config import config
 from src.models.product import Product, ProductCreate, ProductUpdate, ProductRead
@@ -25,11 +26,26 @@ templates = Jinja2Templates(directory=config.root_dir / "src/templates")
         response_model = List[ProductRead],
         status_code    = 200
         )
-async def get_products(session: SessionDep) -> List[ProductRead]:
+async def get_products(
+    session:   SessionDep,
+    name:      str | None = Query(None, description="Search by name"),
+    min_price: Decimal | None = Query(None, ge=0),
+    max_price: Decimal | None = Query(None, ge=0)
+) -> List[ProductRead]:
     """
     """
     try:
         statement = select(Product)
+
+        if name:
+            statement = statement.where(func.lower(Product.name).contains(name.lower()))
+
+        if min_price is not None:
+            statement = statement.where(Product.price >= min_price)
+
+        if max_price is not None:
+            statement = statement.where(Product.price <= max_price)
+
         products: List[Product] = session.exec(statement).all()
         return products
 
@@ -44,7 +60,7 @@ async def get_products(session: SessionDep) -> List[ProductRead]:
 # POST - Products
 @router.post(
         "/", 
-        response_model = ProductRead, 
+        response_model = ProductRead,
         )
 async def add_product(
     session:     SessionDep, 
@@ -93,7 +109,7 @@ async def add_product(
 @router.patch(
         "/{product_id}",
         response_model = ProductRead,
-        status_code = 201
+        status_code = 200
 )
 async def product_update(
     session: SessionDep,
@@ -117,6 +133,7 @@ async def product_update(
         session.refresh(db_product)
 
         return ProductRead.model_validate(db_product)
+
 
     except Exception as e:
         session.rollback()
@@ -149,10 +166,15 @@ async def remove_all_product(session: SessionDep) -> str:
 
 
 # DELETE - /products/{product_id} Products by ID
-@router.delete("/{product_id}", response_model=ProductRead, status_code=200)
-async def remove_product(session: SessionDep, 
-                         product_id: int
-                        ) -> ProductRead:
+@router.delete(
+        "/{product_id}", 
+        response_model = ProductRead, 
+        status_code = 200
+        )
+async def remove_product(
+    session: SessionDep, 
+    product_id: int
+) -> ProductRead:
     
     product = session.get(Product, product_id)
 
@@ -166,6 +188,7 @@ async def remove_product(session: SessionDep,
         session.commit()
 
         return deleted_product
+
 
     except Exception as e:
         session.rollback()
