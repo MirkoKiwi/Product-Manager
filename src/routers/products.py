@@ -125,7 +125,7 @@ async def product_update(
     try:
         update_data = product_update.model_dump(exclude_unset=True)
 
-        for key, value in  update_data.items():
+        for key, value in update_data.items():
             setattr(db_product, key, value)
 
         session.add(db_product)
