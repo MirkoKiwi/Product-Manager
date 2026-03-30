@@ -40,7 +40,7 @@
                     </button>
                     <!-- Delete button -->
                     <button class="btn btn-sm btn-danger"
-                            onclick="">
+                            onclick="deleteProduct('{{ product.id }}')">
                         Delete
                     </button>
                 </td>
@@ -55,6 +55,24 @@
 </div>
 
 
+<!-- Add modal -->
+<div class="modal fade" id="addProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5>New Product</h5></div>
+            <div class="modal-body">
+                <input type="text"   id="add-name"     class="form-control mb-2" placeholder="Name">
+                <input type="number" id="add-price"    class="form-control mb-2" placeholder="Price" step="0.01">
+                <input type="number" id="add-quantity" class="form-control mb-2" placeholder="Quantity">
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-bs-dismiss="modal">     Cancel</button>
+                <button class="btn btn-success" onclick="submitAddProduct()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modify modal -->
 <div class="modal fade" id="editProductModal" tabindex="-1">
     <div class="modal-dialog">
@@ -66,9 +84,9 @@
                 <input type="number" id="edit-price"    class="form-control mb-2" step="0.01">
                 <input type="number" id="edit-quantity" class="form-control mb-2">
             </div>
-            <div>
+            <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">      Cancel</button>
-                <button class="btn btn-secondary" onclick="submitEditProduct()">Update</button>
+                <button class="btn btn-primary" onclick="submitEditProduct()">Update</button>
             </div>
         </div>
     </div>
@@ -76,15 +94,40 @@
 
 <script>
 const API_URL = "/products/";
+let editModal;
+
+// POST
+async function submitAddProduct() {
+    const data = {
+        name:     document.getElementById('add-name').value,
+        price:    parseFloat(document.getElementById('add-price').value),
+        quantity: parseInt(document.getElementById('add-quantity').value)
+    };
+
+    const response = await fetch(`${API_URL}`, {
+        method:  'POST',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify(data)
+    });
+
+    if ( response.ok ) { location.reload(); }
+    else { alert("Error adding!"); }
+}
 
 // DELETE
+async function deleteProduct(id) {
+    if ( !confirm("Are you sure you wanna delete this product?") ) { return; }
 
+    const response = await fetch(`${API_URL}${id}`, { method: 'DELETE' });
+
+    if ( response.ok ) { document.getElementById(`row-${id}`).remove(); }
+    else { alert("Error deleting!") }
+}
 
 // PATCH
-let editModal;
 function openEditModal(id, name, price, quantity) {
     document.getElementById('edit-id').value        = id;
-    document.getElementById('edit-name').value     = name;
+    document.getElementById('edit-name').value      = name;
     document.getElementById('edit-price').value     = price;
     document.getElementById('edit-quantity').value  = quantity;
 
@@ -99,6 +142,7 @@ async function submitEditProduct() {
         price:    parseFloat(document.getElementById('edit-price').value),
         quantity: parseInt(document.getElementById('edit-quantity').value)
     };
+
     const response = await fetch(`${API_URL}${id}`, {
         method:  'PATCH',
         headers: {'Content-Type': 'application/json'},
