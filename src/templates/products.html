@@ -5,7 +5,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
     <h2>Products</h2>
-    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">+ Add Product</button>
+    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#addProductModal">
+        + Add Product
+    </button>
 </div>
 
 <div class="table-responsive">
@@ -21,14 +23,26 @@
         </thead>
         <tbody>
             {% for product in products %}
-            <tr>
+            <tr id="row-{{ product.id }}">
                 <td>{{ product.id }}</td>
                 <td>{{ product.name }}</td>
                 <td>€ {{ "%.2f"|format(product.price) }}</td>
                 <td>{{ product.quantity }}</td>
                 <td>
-                    <!-- TODO: add Modify and Add -->
-                    <button class="btn btn-sm btn-danger">Delete</button>
+                    <!-- Modify button -->
+                    <button class="btn btn-primary btn-sm"
+                            onclick="openEditModal('{{ product.id }}',
+                                                   '{{ product.name }}',
+                                                   '{{ product.price }}',
+                                                   '{{ product.quantity }}'
+                                                  )">
+                        Modify
+                    </button>
+                    <!-- Delete button -->
+                    <button class="btn btn-sm btn-danger"
+                            onclick="">
+                        Delete
+                    </button>
                 </td>
             </tr>
             {% else %}
@@ -39,4 +53,61 @@
         </tbody>
     </table>
 </div>
+
+
+<!-- Modify modal -->
+<div class="modal fade" id="editProductModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header"><h5>Modify Product</h5></div>
+            <div class="modal-body">
+                <input type="hidden" id="edit-id">
+                <input type="text"   id="edit-name"     class="form-control mb-2">
+                <input type="number" id="edit-price"    class="form-control mb-2" step="0.01">
+                <input type="number" id="edit-quantity" class="form-control mb-2">
+            </div>
+            <div>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">      Cancel</button>
+                <button class="btn btn-secondary" onclick="submitEditProduct()">Update</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const API_URL = "/products/";
+
+// DELETE
+
+
+// PATCH
+let editModal;
+function openEditModal(id, name, price, quantity) {
+    document.getElementById('edit-id').value        = id;
+    document.getElementById('edit-name').value     = name;
+    document.getElementById('edit-price').value     = price;
+    document.getElementById('edit-quantity').value  = quantity;
+
+    editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
+    editModal.show();
+}
+
+async function submitEditProduct() {
+    const id   = document.getElementById('edit-id').value;
+    const data = {
+        name:     document.getElementById('edit-name').value,
+        price:    parseFloat(document.getElementById('edit-price').value),
+        quantity: parseInt(document.getElementById('edit-quantity').value)
+    };
+    const response = await fetch(`${API_URL}${id}`, {
+        method:  'PATCH',
+        headers: {'Content-Type': 'application/json'},
+        body:    JSON.stringify(data)
+    });
+
+    if ( response.ok ) { location.reload(); }
+    else { alert("Error updating!"); }
+}
+</script>
+
 {% endblock %}
