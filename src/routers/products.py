@@ -33,6 +33,7 @@ async def get_products(
     max_price: Decimal | None = Query(None, ge=0)
 ) -> List[ProductRead]:
     """
+        Retrieves a list of products based on the filters
     """
     try:
         statement = select(Product)
@@ -68,6 +69,7 @@ async def add_product(
     response:    Response
 ) -> ProductRead:
     """
+       Adds a new product to the Database 
     """
     try:
         # Search if the product's name and price are already existing in DBs
@@ -117,6 +119,7 @@ async def product_update(
     product_id:     int
 ) -> ProductRead:
     """
+        Updates a product 
     """
     db_product = session.get(Product, product_id)
     if not db_product:
@@ -149,13 +152,14 @@ async def product_update(
         )
 async def remove_all_product(session: SessionDep) -> str:
     """
+        Removes all products stored in the Database
     """
     try:
         statement = delete(Product)
         session.exec(statement)
         session.commit()
 
-        return "All Products deleted"
+        return "All Products deleted!"
 
 
     except Exception as e:
@@ -175,7 +179,9 @@ async def remove_product(
     session:    SessionDep, 
     product_id: int
 ) -> ProductRead:
-    
+    """
+        Removes a product from the Database, based on its ID
+    """
     product = session.get(Product, product_id)
 
     if not product:
