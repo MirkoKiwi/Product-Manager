@@ -9,12 +9,15 @@ if Path(__file__).parent == Path(os.getcwd()):
 
 
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.staticfiles import StaticFiles
+from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
 
 from src.routers import frontend, products
 from src.data.db import init_database
+
+from typing import Annotated
 
 
 
@@ -43,6 +46,11 @@ app.mount(
     StaticFiles(directory=config.root_dir / "src/static"),
     name="static"
 )
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+@app.get("/items/")
+async def print_items(token: Annotated[str, Depends(oauth2_scheme)]):
+    return {"token": token}
 
 app.include_router(frontend.router)
 app.include_router(products.router)
