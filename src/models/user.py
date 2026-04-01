@@ -13,7 +13,7 @@ class UserBase(SQLModel):
     disabled:  bool | None = False
 
 
-class UserDB(UserBase, table=True):
+class User(UserBase, table=True):
     """Database table model"""
     id:              int | None = Field(default=None, primary_key=True)
     hashed_password: str

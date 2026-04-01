@@ -22,7 +22,7 @@ engine       = create_engine(sqlite_url, connect_args=connect_args, echo=True)
 
 def init_database() -> None:
     does_exist: bool = os.path.isfile(sqlite_file_name)
-    SQLModel.metadata.create_all(engine) 
+    SQLModel.metadata.create_all(engine)
 
 
 def get_session():
