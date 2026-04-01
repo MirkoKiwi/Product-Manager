@@ -15,12 +15,23 @@
       <a class="navbar-brand" href="/">Product Manager</a>
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ms-auto">
+
           <li class="nav-item">
             <a class="nav-link" href="/">Home</a>
           </li>
+
           <li class="nav-item">
             <a class="nav-link" href="{{ url_for('get_products_list_ui') }}">Products List</a>
           </li>
+
+          <li class="nav-item" id="nav-login">
+            <a class="nav-link text-primary" href="/login">Login</a>
+          </li>
+
+          <li class="nav-item d-none" id="nav-logout">
+            <a class="nav-link text-danger" href="#" onclick="logout()">Logout</a>
+          </li>
+
         </ul>
       </div>  
     </div>
@@ -43,3 +54,13 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
+
+<script>
+
+
+function logout() {
+  localStorage.removeItem('access-token');
+  window.location.href = '/';
+}
+document.addEventListener('DOMContentLoaded', updateAuthUI);
+</script>
