@@ -23,10 +23,8 @@ async def home(request: Request):
 
 
 
-
 @router.get("/products_list", response_class=HTMLResponse)
 async def get_products_list_ui(request: Request, session: SessionDep):
-
     statement = select(Product)
     products = session.exec(statement).all()
 
@@ -34,4 +32,22 @@ async def get_products_list_ui(request: Request, session: SessionDep):
         request = request,
         name    = "products.html",
         context = {"products": products}
+    )
+
+
+
+@router.get("/signup", response_class=HTMLResponse)
+async def signup_ui(request: Request):
+    return templates.TemplateResponse(
+        request = request,
+        name    = "signup.html"
+    )
+
+
+
+@router.get("/login", response_class=HTMLResponse)
+async def login_ui(request: Request):
+    return templates.TemplateResponse(
+        request = request,
+        name    = "login.html"
     )
