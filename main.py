@@ -14,6 +14,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
 
+from src.routers import auth, products, frontend
 from src.routers import frontend, products
 from src.data.db import init_database
 
@@ -48,10 +49,8 @@ app.mount(
 )
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
-@app.get("/items/")
-async def print_items(token: Annotated[str, Depends(oauth2_scheme)]):
-    return {"token": token}
 
+app.include_router(auth.router)
 app.include_router(frontend.router)
 app.include_router(products.router)
 
