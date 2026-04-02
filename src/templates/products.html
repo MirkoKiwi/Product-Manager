@@ -98,6 +98,13 @@ let editModal;
 
 // POST
 async function submitAddProduct() {
+    const token = localStorage.getItem('access_token');
+    if ( !token ) {
+        alert("You must be logged in!");
+        window.location.href = '/login';
+        return;
+    }
+
     const data = {
         name:     document.getElementById('add-name').value,
         price:    parseFloat(document.getElementById('add-price').value),
@@ -106,23 +113,48 @@ async function submitAddProduct() {
 
     const response = await fetch(`${API_URL}`, {
         method:  'POST',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
         body:    JSON.stringify(data)
     });
 
     if ( response.ok ) { location.reload(); }
+    else if ( response.status == 401 ) {
+        alert('Invalid session! You must be logged in!');
+        window.location.href = '/login';
+    }
     else { alert("Error adding!"); }
 }
+
 
 // DELETE
 async function deleteProduct(id) {
     if ( !confirm("Are you sure you wanna delete this product?") ) { return; }
 
-    const response = await fetch(`${API_URL}${id}`, { method: 'DELETE' });
+    const token = localStorage.getItem('access_token');
+    if ( !token ) {
+        alert("You must be logged in!");
+        window.location.href = '/login';
+        return;
+    }
+
+    const response = await fetch(`${API_URL}${id}`, { 
+        method: 'DELETE',
+        headers: {
+            'Authorization': `Bearer ${token}`
+        }
+    });
 
     if ( response.ok ) { document.getElementById(`row-${id}`).remove(); }
-    else { alert("Error deleting!") }
+    else if ( response.status == 401 ) {
+        alert('Invalid session! You must be logged in!');
+        window.location.href = '/login';
+    }
+    else { alert("Internal server error!") }
 }
+
 
 // PATCH
 function openEditModal(id, name, price, quantity) {
@@ -136,7 +168,9 @@ function openEditModal(id, name, price, quantity) {
 }
 
 async function submitEditProduct() {
-    const id   = document.getElementById('edit-id').value;
+    const id    = document.getElementById('edit-id').value;
+    const token = localStorage.getItem('access_token');
+
     const data = {
         name:     document.getElementById('edit-name').value,
         price:    parseFloat(document.getElementById('edit-price').value),
@@ -145,12 +179,19 @@ async function submitEditProduct() {
 
     const response = await fetch(`${API_URL}${id}`, {
         method:  'PATCH',
-        headers: {'Content-Type': 'application/json'},
+        headers: {
+            'Content-Type':  'application/json',
+            'Authorization': `Bearer ${token}`
+        },
         body:    JSON.stringify(data)
     });
 
     if ( response.ok ) { location.reload(); }
-    else { alert("Error updating!"); }
+    else if ( response.status == 401 ) {
+        alert('Invalid session! You must be logged in!');
+        window.location.href = '/login';
+    }
+    else { alert("Internal server error!"); }
 }
 </script>
 

@@ -119,7 +119,8 @@ async def add_product(
 async def product_update(
     session:        SessionDep,
     product_update: ProductUpdate,
-    product_id:     int
+    product_id:     int,
+    current_user:   User = Depends(get_current_user)
 ) -> ProductRead:
     """
         Updates a product 
@@ -153,7 +154,10 @@ async def product_update(
         "/", 
         status_code = 200
         )
-async def remove_all_product(session: SessionDep) -> str:
+async def remove_all_product(
+    session: SessionDep,
+    current_user: User = Depends(get_current_user)
+) -> str:
     """
         Removes all products stored in the Database
     """
@@ -180,7 +184,8 @@ async def remove_all_product(session: SessionDep) -> str:
         )
 async def remove_product(
     session:    SessionDep, 
-    product_id: int
+    product_id: int,
+    current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
         Removes a product from the Database, based on its ID
