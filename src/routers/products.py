@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Request, Path, Query, Form, Response, status
+from fastapi import APIRouter, HTTPException, Request, Path, Query, Form, Response, status, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 
@@ -10,6 +10,8 @@ from decimal import Decimal
 from src.config import config
 from src.models.product import Product, ProductCreate, ProductUpdate, ProductRead
 from src.data.db import SessionDep
+from src.auth_utils import get_current_user
+from src.models.user import User
 
 
 
@@ -53,7 +55,7 @@ async def get_products(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error retrieving products: {e}")
+        raise HTTPException(status_code=500, detail=f"Error retrieving products: {e}") from e
 
 
 
@@ -64,9 +66,10 @@ async def get_products(
         response_model = ProductRead,
         )
 async def add_product(
-    session:     SessionDep, 
-    new_product: ProductCreate,
-    response:    Response
+    session:      SessionDep, 
+    new_product:  ProductCreate,
+    response:     Response,
+    current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
        Adds a new product to the Database 
@@ -102,7 +105,7 @@ async def add_product(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error adding product: {e}")
+        raise HTTPException(status_code=500, detail=f"Error adding product: {e}") from e
 
 
 
@@ -116,7 +119,8 @@ async def add_product(
 async def product_update(
     session:        SessionDep,
     product_update: ProductUpdate,
-    product_id:     int
+    product_id:     int,
+    current_user:   User = Depends(get_current_user)
 ) -> ProductRead:
     """
         Updates a product 
@@ -140,7 +144,7 @@ async def product_update(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating product: {e}")
+        raise HTTPException(status_code=500, detail=f"Error updating product: {e}") from e
 
 
 
@@ -150,7 +154,10 @@ async def product_update(
         "/", 
         status_code = 200
         )
-async def remove_all_product(session: SessionDep) -> str:
+async def remove_all_product(
+    session: SessionDep,
+    current_user: User = Depends(get_current_user)
+) -> str:
     """
         Removes all products stored in the Database
     """
@@ -164,7 +171,7 @@ async def remove_all_product(session: SessionDep) -> str:
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting all products: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting all products: {e}") from e
 
 
 
@@ -177,7 +184,8 @@ async def remove_all_product(session: SessionDep) -> str:
         )
 async def remove_product(
     session:    SessionDep, 
-    product_id: int
+    product_id: int,
+    current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
         Removes a product from the Database, based on its ID
@@ -198,4 +206,4 @@ async def remove_product(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting product: {e}")
+        raise HTTPException(status_code=500, detail=f"Error deleting product: {e}") from e

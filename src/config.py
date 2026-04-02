@@ -1,3 +1,5 @@
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 from pathlib import Path
 
 
@@ -16,4 +18,15 @@ class _Config:
 
 
 
-config: _Config = _Config()
+class _Settings(BaseSettings):
+    auth_key:  str 
+    algorithm: str
+    access_token_expire_minutes: int
+
+    model_config = SettingsConfigDict(env_file=".env")
+
+
+
+
+config:   _Config   = _Config()
+settings: _Settings = _Settings()
