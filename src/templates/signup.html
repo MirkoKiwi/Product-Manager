@@ -31,11 +31,15 @@ const delay = ms => new Promise(res => setTimeout(res, ms));
 async function handleSignup(event) {
     event.preventDefault();
 
-    const userField     = document.getElementById('reg-username').value;
-    const emailField    = document.getElementById('reg-email').value;
-    const fullNameField = document.getElementById('reg-name').value
-                          + document.getElementById('reg-last_name').value;
-    const passField     = document.getElementById('reg-password').value;
+    const userField      = document.getElementById('reg-username').value;
+    const emailField     = document.getElementById('reg-email').value;
+    const firstNameField = document.getElementById('reg-name').value
+    const lastNameField  = document.getElementById('reg-last_name').value;
+    const fullNameField  = (firstNameField || lastNameField) 
+                           ? `${firstNameField} ${lastNameField}` : null;
+    const passField      = document.getElementById('reg-password').value;
+
+    
 
     const userData = {
         username:  userField,
