@@ -34,26 +34,45 @@ async def get_products_list_ui(
     max_price: Optional[str] | None = Query(None)
 ):
     statement = select(Product)
+    min_val = None
+    max_val = None
+
 
     if name and name.strip():
         statement = statement.where(func.lower(Product.name).contains(name.lower()))
 
 
-    if min_price is not None and min_price.strip():
-        try:
-            statement = statement.where(Product.price >= Decimal(min_price))
-
-        except ValueError:
-            min_price = None
-
-
     if max_price is not None and max_price.strip():
         try:
-            statement = statement.where(Product.price <= Decimal(max_price))
+            max_val = Decimal(max_price)
+
+        except ValueError:
+            max_price = None
+
+    if min_price and min_price.strip():
+        try:
+            curr_min = Decimal(min_price)
+
+            if max_val is not None and curr_min > max_val:
+                s_min = min_price.strip()
+
+                while s_min and Decimal(s_min) > max_val:
+                    s_min = s_min[:-1]
+
+                min_price = s_min
+                min_val = Decimal(min_price) if min_price else None
+    
+            else:
+                min_val = curr_min
 
         except ValueError:
             min_price = None
 
+    if min_val is not None:
+        statement = statement.where(Product.price >= min_val)
+    
+    if max_val is not None:
+        statement = statement.where(Product.price <= max_val)
 
     products = session.exec(statement).all()
 
