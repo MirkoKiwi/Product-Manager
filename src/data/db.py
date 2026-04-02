@@ -7,8 +7,8 @@ from src.config import config
 
 
 # DB Models
-from src.models.product import Product, ProductCreate, ProductUpdate, ProductRead
-
+from src.models.product import Product
+from src.models.user import User
 
 
 sqlite_file_name = config.root_dir / "src/data/products.db"
