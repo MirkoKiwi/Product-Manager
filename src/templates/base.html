@@ -56,10 +56,23 @@
 </html>
 
 <script>
+function updateAuthUI() {
+  const token      = localStorage.getItem('access_token');
+  const loginLink  = document.getElementById('nav-login');
+  const logoutLink = document.getElementById('nav-logout')
 
+  if ( token ) {  // User Logged In: show log-out, hide log-in
+    loginLink.classList.add('d-none');
+    logoutLink.classList.remove('d-none');
+  }
+  else {  // User Logged Out: show log-in
+    loginLink.classList.remove('d-none');
+    logoutLink.classList.add('d-none');
+  }
+}
 
 function logout() {
-  localStorage.removeItem('access-token');
+  localStorage.removeItem('access_token');
   window.location.href = '/';
 }
 document.addEventListener('DOMContentLoaded', updateAuthUI);
