@@ -21,6 +21,12 @@ def test_signup(client: TestClient):
 
 
 
+def test_signup_already_exists(client: TestClient):
+    # TODO
+    pass
+
+
+
 def test_login(client: TestClient):
     """Logging in after acquiring JWT Token"""
     client.post("/auth/register", json={
@@ -36,6 +42,12 @@ def test_login(client: TestClient):
     })
     assert login_res.status_code == 200
     assert "access_token" in login_res.json()
+
+
+
+def test_login_wrong_password(client: TestClient):
+    # TODO
+    pass
 
 
 
