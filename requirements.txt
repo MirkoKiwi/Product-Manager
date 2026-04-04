@@ -4,3 +4,4 @@ sqlmodel
 requests
 pwdlib[argon2]
 pyjwt[crypto]
+pytest
