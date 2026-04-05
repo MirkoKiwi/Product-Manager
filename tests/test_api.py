@@ -22,8 +22,22 @@ def test_signup(client: TestClient):
 
 
 def test_signup_already_exists(client: TestClient):
-    # TODO
-    pass
+    """"""
+    reg_res = client.post("/auth/register", json={
+        "username":  "user",
+        "password":  "password123",
+        "email":     "test@test.com",
+        "full_name": "name test",
+    })
+
+    reg_res2 = client.post("/auth/register", json={
+        "username":  "user",
+        "password":  "password123",
+        "email":     "test2@test.com",
+        "full_name": "second test",
+    })
+    assert reg_res2.status_code == 400
+
 
 
 
@@ -46,8 +60,34 @@ def test_login(client: TestClient):
 
 
 def test_login_wrong_password(client: TestClient):
-    # TODO
-    pass
+    """"""
+    client.post("/auth/register", json={
+        "username": "user",
+        "password": "password123",
+        "email":    "test@test.com"
+    })
+
+    login_res = client.post("/auth/token", data={
+        "username": "user",
+        "password": "wrongpassword123"
+    })
+    assert login_res.status_code == 401
+
+
+
+def test_login_wrong_username(client: TestClient):
+    """"""
+    client.post("/auth/register", json={
+        "username": "user",
+        "password": "password123",
+        "email":    "test@test.com"
+    })
+
+    login_res = client.post("/auth/token", data={
+        "username": "user33",
+        "password": "wrongpassword123"
+    })
+    assert login_res.status_code == 401
 
 
 
