@@ -2,6 +2,7 @@ fastapi[standard]
 uvicorn
 sqlmodel
 requests
+pydantic-settings
 pwdlib[argon2]
 pyjwt[crypto]
 pytest
