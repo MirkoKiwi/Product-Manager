@@ -14,24 +14,39 @@ router = APIRouter(prefix="/auth")
 
 
 
-@router.post("/register", status_code=201)
+@router.post(
+    "/register", 
+    status_code    = 201,
+    response_model = dict
+)
 async def register_user(
     session: SessionDep, 
     user_in: UserCreate
 ):
     """
+    Registers a new user in the systems
+    
+    Args:
+        session: Database session dependency
+        user_in: user data including username, password, and email/full_name (optional)
+
+    Returns:
+        dict: success message if the user is created.
     """
     try:
         statement = select(User).where(User.username == user_in.username)
         
         if session.exec(statement).first():
-            raise HTTPException(status_code=400, detail="Username already registered")
+            raise HTTPException(
+                status_code = 400,
+                detail      = "Username already registered"
+            )
         
         new_user = User(
-            username=user_in.username,
-            email=user_in.email,
-            full_name=user_in.full_name,
-            hashed_password=get_password_hash(user_in.password)
+            username        = user_in.username,
+            email           = user_in.email,
+            full_name       = user_in.full_name,
+            hashed_password = get_password_hash(user_in.password)
         )
         
         session.add(new_user)
@@ -53,13 +68,26 @@ async def register_user(
 
 
 
-@router.post("/token")
+@router.post(
+        "/token",
+        status_code    = 200,
+        response_model = Token
+)
 async def login_for_access_token(
     session: SessionDep,
     form_data: OAuth2PasswordRequestForm = Depends()
 ) -> Token:
     """
-        Searches for user in DB
+    Authenticates a user and returns a JWT OAuth2 access token
+
+    Args:
+        \n\n
+        session: Database session dependency
+        form_data: OAuth2 form (username and password)
+
+    Returns:
+        \n\n
+        Token: access token and bearer type
     """
     try:
         statement = select(User).where(User.username == form_data.username)
@@ -67,14 +95,15 @@ async def login_for_access_token(
         
         if not user or not verify_password(form_data.password, user.hashed_password):
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect username or password",
-                headers={"WWW-Authenticate": "Bearer"},
+                status_code = 401,
+                detail      = "Incorrect username or password",
+                headers     = {"WWW-Authenticate": "Bearer"},
             )
     
         access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
         access_token         = create_access_token(
-            data={"sub": user.username}, expires_delta=access_token_expires
+            data = {"sub": user.username}, 
+            expires_delta = access_token_expires
         )
         return Token(access_token=access_token, token_type="bearer")
     
@@ -84,6 +113,6 @@ async def login_for_access_token(
     except Exception as e:
         print(f"Error during login: {e}")
         raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error"
+            status_code = 500,
+            detail      = f"Internal server error"
         ) from e

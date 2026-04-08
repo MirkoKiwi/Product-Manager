@@ -24,9 +24,9 @@ templates = Jinja2Templates(directory=config.root_dir / "src/templates")
 
 # GET - Products
 @router.get(
-        "/", 
-        response_model = List[ProductRead],
-        status_code    = 200
+        "/",
+        status_code    = 200,
+        response_model = List[ProductRead]
         )
 async def get_products(
     session:   SessionDep,
@@ -35,7 +35,18 @@ async def get_products(
     max_price: Decimal | None = Query(None, ge=0)
 ) -> List[ProductRead]:
     """
-        Retrieves a list of products based on the filters
+    Retrieves a list of products based on the filters
+    
+    Args:
+        \n\n
+        session: Database session dependency
+        name: partial name filter
+        min_price: minimum price filter
+        max_price: maximum price filter
+
+    Returns:
+        \n\n
+        List[ProductRead]: a list of product filtered by the criteria
     """
     try:
         statement = select(Product)
@@ -66,13 +77,23 @@ async def get_products(
         response_model = ProductRead,
         )
 async def add_product(
-    session:      SessionDep, 
-    new_product:  ProductCreate,
+    session:      SessionDep,
     response:     Response,
+    new_product:  ProductCreate,
     current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
-       Adds a new product to the Database 
+    Adds a new product to the Database or update quantity if already existing
+
+    Args:
+        \n\n
+        session: Database session dependency
+        new_product: data of the product to be added
+        current_user: authenticated user performing the request
+
+    Returns:
+        \n\n
+        ProductRead: the created product data
     """
     try:
         # Search if the product's name and price are already existing in DBs
@@ -89,7 +110,7 @@ async def add_product(
             session.commit()
             session.refresh(existing_product)
 
-            response.status_code = status.HTTP_200_OK
+            response.status_code = 200
             return ProductRead.model_validate(existing_product)
 
         # else add new product
@@ -99,7 +120,7 @@ async def add_product(
         session.commit()
         session.refresh(product)
         
-        response.status_code = status.HTTP_201_CREATED
+        response.status_code = 201
         return ProductRead.model_validate(product)
 
 
@@ -113,8 +134,8 @@ async def add_product(
 # PATCH - Update by ID
 @router.patch(
         "/{product_id}",
-        response_model = ProductRead,
-        status_code = 200
+        status_code    = 200,
+        response_model = ProductRead
 )
 async def product_update(
     session:        SessionDep,
@@ -123,11 +144,24 @@ async def product_update(
     current_user:   User = Depends(get_current_user)
 ) -> ProductRead:
     """
-        Updates a product 
+    Updates a product
+    
+    Args:
+        \n\n
+        session: Database session dependency
+        product_update: the new data to update the existing product with
+        product_id: ID of the product to update
+        current_user: authenticated user performing the request
+
+    Returns:
+        \n\n
+        ProductRead: the updated product data
     """
     db_product = session.get(Product, product_id)
     if not db_product:
-        raise HTTPException(status_code=404, detail=f"Product {product_id} not found")
+        raise HTTPException(
+            status_code = 404, 
+            detail      = f"Product {product_id} not found")
 
     try:
         update_data = product_update.model_dump(exclude_unset=True)
@@ -144,7 +178,10 @@ async def product_update(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error updating product: {e}") from e
+        raise HTTPException(
+            status_code = 500, 
+            detail      = f"Error updating product: {e}"
+        ) from e
 
 
 
@@ -152,43 +189,66 @@ async def product_update(
 # DELETE - Products
 @router.delete(
         "/", 
-        status_code = 200
+        status_code    = 200,
+        response_model = str
         )
 async def remove_all_product(
-    session: SessionDep,
+    session:      SessionDep,
     current_user: User = Depends(get_current_user)
-) -> str:
+) -> dict:
     """
-        Removes all products stored in the Database
+    Removes all products stored in the Database (debug)
+    
+    Args:
+        \n\n
+        session: Database session dependencys
+        current_user: authenticated user
+
+    Returns:
+        \n\n
+        dict: confirmation message
     """
     try:
         statement = delete(Product)
         session.exec(statement)
         session.commit()
 
-        return "All Products deleted!"
+        return {"message": "All Products deleted!"}
 
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting all products: {e}") from e
+        raise HTTPException(
+            status_code = 500, 
+            detail      = f"Error deleting all products: {e}"
+        ) from e
 
 
 
 
 # DELETE - /products/{product_id} Products by ID
 @router.delete(
-        "/{product_id}", 
-        response_model = ProductRead, 
-        status_code    = 200
+        "/{product_id}",
+        status_code    = 200,
+        response_model = ProductRead
         )
 async def remove_product(
-    session:    SessionDep, 
-    product_id: int,
+    session:      SessionDep, 
+    product_id:   int,
     current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
-        Removes a product from the Database, based on its ID
+    Removes a product by ID
+
+    Args:
+        \n\n
+        session: Database session dependency
+        product_id: ID of the product to delete
+        current_user: authenticated user performing the request
+
+    Returns:
+        \n\n
+        ProductRead: the deleted product data
     """
     product = session.get(Product, product_id)
 

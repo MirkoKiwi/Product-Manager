@@ -27,18 +27,23 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/token")
 
 
 
-def verify_password(plain_password, hashed_password):
+def verify_password(plain_password, hashed_password) -> bool:
     return password_hash.verify(plain_password, hashed_password)
 
 
-def get_password_hash(password):
+
+def get_password_hash(password) -> str:
     return password_hash.hash(password)
 
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+
+def create_access_token(
+    data:          dict, 
+    expires_delta: timedelta | None = None
+) -> str:
     to_encode = data.copy()
 
-    if expires_delta:
+    if expires_delta is not None:
         expire = datetime.now(timezone.utc) + expires_delta
     else:
         expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
@@ -49,14 +54,25 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     return encoded_jwt
 
 
+
 async def get_current_user(
     session: SessionDep,
-    token: Annotated[str, Depends(oauth2_scheme)]
-):
+    token:   Annotated[str, Depends(oauth2_scheme)]
+) -> User:
+    """
+    Validate JWT token and retrieves user from Database
+
+    Args:
+        session: Database session
+        token: bearer token
+
+    Returns:
+        User: authenticated user object
+    """
     credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Couldn't validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+        status_code = 401,
+        detail      = "Couldn't validate credentials",
+        headers     = {"WWW-Authenticate": "Bearer"},
     )
     try:
         payload = jwt.decode(token, AUTH_KEY, algorithms=[ALGORITHM])
