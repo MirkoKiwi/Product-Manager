@@ -7,10 +7,11 @@ from src.models.product import Product, ProductCreate
 
 
 
+# --- Sign up tests ---
 
 def test_signup(client: TestClient):
-    """Signup test"""
-    # Signup
+    """Signup test with valid fields"""
+    # Sign up
     reg_res = client.post("/auth/register", json={
         "username":  "user",
         "password":  "password123",
@@ -22,7 +23,7 @@ def test_signup(client: TestClient):
 
 
 def test_signup_already_exists(client: TestClient):
-    """"""
+    # Sign up
     reg_res = client.post("/auth/register", json={
         "username":  "user",
         "password":  "password123",
@@ -30,6 +31,7 @@ def test_signup_already_exists(client: TestClient):
         "full_name": "name test",
     })
 
+    # Sign up with same username
     reg_res2 = client.post("/auth/register", json={
         "username":  "user",
         "password":  "password123",
@@ -40,6 +42,7 @@ def test_signup_already_exists(client: TestClient):
 
 
 
+# --- Login Tests ---
 
 def test_login(client: TestClient):
     """Logging in after acquiring JWT Token"""
@@ -103,6 +106,9 @@ def test_get_products_list(client: TestClient, session: Session):
 
 
 
+
+# --- GET Tests ---
+
 def test_get_filter_products(client: TestClient, session: Session):
     """"""
     session.add(Product.model_validate(ProductCreate(name="TestItem1", price=10, quantity=1)))
@@ -135,6 +141,8 @@ def test_get_filter_products(client: TestClient, session: Session):
     
 
 
+
+# --- POST Tests ---
 
 def test_add_product_auth(client: TestClient):
     """"""
@@ -207,6 +215,9 @@ def test_add_product_already_existing(client: TestClient, session: Session):
 
 
 
+
+# --- PATCH Tests ---
+
 def test_patch_product_auth(client: TestClient, session: Session):
     """"""
     client.post("/auth/register", json={"username": "user", "password": "password123"})
@@ -221,13 +232,39 @@ def test_patch_product_auth(client: TestClient, session: Session):
 
     updated_prod = {
         "name": "TestItemPATCH_NewName", 
-        "price": 15.00
+        "price": 15.00,
+        "quantity": 7
     }
     response = client.patch(f"/products/{prod.id}", json=updated_prod, headers=headers)
 
     assert response.status_code == 200
     assert response.json()["name"] == "TestItemPATCH_NewName"
     assert Decimal(response.json()["price"]) == Decimal("15.00")
+    assert response.json()["quantity"] == 7
+
+
+
+def test_patch_partial_product_auth(client: TestClient, session: Session):
+    """"""
+    client.post("/auth/register", json={"username": "user", "password": "password123"})
+    login_res = client.post("/auth/token", data={"username": "user", "password": "password123"})
+    token     = login_res.json()["access_token"]
+    headers   = {"Authorization": f"Bearer {token}"}
+
+    prod = Product(name="TestItemPATCH", price=10.00, quantity=5)
+    session.add(prod)
+    session.commit()
+    session.refresh(prod)
+
+    updated_prod = {
+        "name": "TestItemPostPATCH", 
+        "price": 12.55
+    }
+    response = client.patch(f"/products/{prod.id}", json=updated_prod, headers=headers)
+
+    assert response.status_code == 200
+    assert response.json()["name"] == "TestItemPostPATCH"
+    assert Decimal(str(response.json()["price"])) == Decimal("12.55")
     assert response.json()["quantity"] == 5
 
 
@@ -249,6 +286,9 @@ def test_patch_product_no_auth(client: TestClient, session: Session):
     assert response.json()["detail"] == "Not authenticated"
 
 
+
+
+# --- DELETE Tests with Auth ---
 
 def test_remove_product_auth(client: TestClient, session: Session):
     """"""

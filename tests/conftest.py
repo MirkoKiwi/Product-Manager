@@ -23,6 +23,9 @@ connect_args = {"check_same_thread": False}
 
 @pytest.fixture(name="session")
 def session_fixture(request):
+    """
+    Test Database
+    """
     if os.path.exists(sqlite_file_name):
         os.remove(sqlite_file_name)
 
@@ -34,6 +37,9 @@ def session_fixture(request):
 
 @pytest.fixture(name="client")
 def client_fixture(session: Session):
+    """
+    Overrides production session dependency
+    """
     def get_session_override():
         return session
     
