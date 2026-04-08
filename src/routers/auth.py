@@ -24,14 +24,14 @@ async def register_user(
     user_in: UserCreate
 ):
     """
-    Registers a new user in the systems
+    Registers a new user in the system
     
     Args:
         session: Database session dependency
         user_in: user data including username, password, and email/full_name (optional)
 
     Returns:
-        dict: success message if the user is created.
+        dict: success message if the user is created
     """
     try:
         statement = select(User).where(User.username == user_in.username)
