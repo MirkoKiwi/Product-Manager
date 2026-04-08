@@ -66,7 +66,7 @@ async def get_products(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error retrieving products: {e}") from e
+        raise HTTPException(status_code=500, detail=f"Internal Server Error") from e
 
 
 
@@ -83,7 +83,7 @@ async def add_product(
     current_user: User = Depends(get_current_user)
 ) -> ProductRead:
     """
-    Adds a new product to the Database or update quantity if already existing
+    Adds a new product to the Database or updates quantity if already existing
 
     Args:
         \n\n
@@ -126,7 +126,10 @@ async def add_product(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error adding product: {e}") from e
+        raise HTTPException(
+            status_code = 500, 
+            detail      = f"Internal Server Error"
+        ) from e
 
 
 
@@ -180,7 +183,7 @@ async def product_update(
         session.rollback()
         raise HTTPException(
             status_code = 500, 
-            detail      = f"Error updating product: {e}"
+            detail      = f"Internal Server Error"
         ) from e
 
 
@@ -220,7 +223,7 @@ async def remove_all_product(
         session.rollback()
         raise HTTPException(
             status_code = 500, 
-            detail      = f"Error deleting all products: {e}"
+            detail      = f"Internal Server Error"
         ) from e
 
 
@@ -233,7 +236,7 @@ async def remove_all_product(
         response_model = ProductRead
         )
 async def remove_product(
-    session:      SessionDep, 
+    session:      SessionDep,
     product_id:   int,
     current_user: User = Depends(get_current_user)
 ) -> ProductRead:
@@ -266,4 +269,7 @@ async def remove_product(
 
     except Exception as e:
         session.rollback()
-        raise HTTPException(status_code=500, detail=f"Error deleting product: {e}") from e
+        raise HTTPException(
+            status_code = 500,
+            detail      = f"Internal Server Error"
+        ) from e
