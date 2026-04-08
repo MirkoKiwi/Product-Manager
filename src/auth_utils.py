@@ -70,7 +70,7 @@ async def get_current_user(
         User: authenticated user object
     """
     credentials_exception = HTTPException(
-        status_code = 401,
+        status_code = status.HTTP_401_UNAUTHORIZED,
         detail      = "Couldn't validate credentials",
         headers     = {"WWW-Authenticate": "Bearer"},
     )
