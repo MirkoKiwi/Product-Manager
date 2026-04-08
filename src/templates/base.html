@@ -29,7 +29,7 @@
           </li>
 
           <li class="nav-item d-none" id="nav-logout">
-            <a class="nav-link text-danger" href="#" onclick="logout()">Logout</a>
+            <a class="nav-link text-danger" href="#" onclick="handleLogout()">Logout</a>
           </li>
 
         </ul>
@@ -55,7 +55,9 @@
 </body>
 </html>
 
+
 <script>
+// Search for access_token in browser local storage
 function updateAuthUI() {
   const token      = localStorage.getItem('access_token');
   const loginLink  = document.getElementById('nav-login');
@@ -65,15 +67,19 @@ function updateAuthUI() {
     loginLink.classList.add('d-none');
     logoutLink.classList.remove('d-none');
   }
-  else {  // User Logged Out: show log-in
+  else {  // User Logged Out: show log-in, hide log-out
     loginLink.classList.remove('d-none');
     logoutLink.classList.add('d-none');
   }
 }
 
-function logout() {
-  localStorage.removeItem('access_token');
-  window.location.href = '/';
+function handleLogout() {
+  if ( confirm("Are you sure you want to Log Out?") ) {
+    localStorage.removeItem('access_token');
+    window.location.href = '/';
+  }
 }
+
 document.addEventListener('DOMContentLoaded', updateAuthUI);
+
 </script>

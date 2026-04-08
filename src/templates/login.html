@@ -19,18 +19,21 @@
 </div>
 
 <script>
+// Sends login credential to OAuth2 token endpoint
 async function handleLogin(event) {
     event.preventDefault();
 
     const userField = document.getElementById('username').value;
     const passField = document.getElementById('password').value;
 
+    // OAuth2 form data
     const params = new URLSearchParams();
     params.append('username', userField);
     params.append('password', passField);
 
     try {
-        const response = await fetch('/auth/token', {
+        const response = await fetch(
+            '/auth/token', {
             method: 'POST',
             body:   params
         });
@@ -42,9 +45,18 @@ async function handleLogin(event) {
             window.location.href = '/products_list';    // Redirect after login
         }
         else {
+            let errorMessage = "Error logging in!";
+            
             const err = document.getElementById('login-error');
             
-            err.textContent = "Error logging in!";
+            if ( response.status === 401 ) {
+                errorMessage = "Invalid credentials";
+            } 
+            else if ( response.status >= 500 ) {
+                errorMessage = "Internal server error";
+            }
+
+            err.textContent = errorMessage;
             err.classList.remove('d-none');
         }
     }
@@ -53,6 +65,7 @@ async function handleLogin(event) {
     }
 }
 document.getElementById('login-form').onsubmit = handleLogin;
+
 </script>
 
 {% endblock %}

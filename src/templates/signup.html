@@ -39,8 +39,6 @@ async function handleSignup(event) {
                            ? `${firstNameField} ${lastNameField}` : null;
     const passField      = document.getElementById('reg-password').value;
 
-    
-
     const userData = {
         username:  userField,
         email:     emailField    || null,
@@ -49,6 +47,7 @@ async function handleSignup(event) {
         disabled:  false
     };
 
+    
     try {
         const response = await fetch('/auth/register', {
             method: 'POST',

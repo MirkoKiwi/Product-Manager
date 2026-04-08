@@ -87,8 +87,8 @@
                 <input type="number" id="add-quantity" class="form-control mb-2" placeholder="Quantity">
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" data-bs-dismiss="modal">     Cancel</button>
-                <button class="btn btn-success" onclick="submitAddProduct()">Save</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">   Cancel</button>
+                <button class="btn btn-success" onclick="submitAddProduct()">Add</button>
             </div>
         </div>
     </div>
@@ -179,10 +179,10 @@ async function deleteProduct(id) {
 
 // PATCH
 function openEditModal(id, name, price, quantity) {
-    document.getElementById('edit-id').value        = id;
-    document.getElementById('edit-name').value      = name;
-    document.getElementById('edit-price').value     = price;
-    document.getElementById('edit-quantity').value  = quantity;
+    document.getElementById('edit-id').value       = id;
+    document.getElementById('edit-name').value     = name;
+    document.getElementById('edit-price').value    = price;
+    document.getElementById('edit-quantity').value = quantity;
 
     editModal = new bootstrap.Modal(document.getElementById('editProductModal'));
     editModal.show();

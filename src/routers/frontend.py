@@ -17,10 +17,11 @@ templates = Jinja2Templates(directory=config.root_dir / "src/templates")
 
 
 
-@router.get("/", response_class=HTMLResponse)
-async def home(request: Request):
+@router.get("/", response_class = HTMLResponse)
+async def home(request: Request) -> HTMLResponse:
     return templates.TemplateResponse(
-        request=request, name="home.html",
+        request = request, 
+        name    = "home.html",
     )
 
 
@@ -32,15 +33,29 @@ async def get_products_list_ui(
     name:      Optional[str] | None = Query(None),
     min_price: Optional[str] | None = Query(None),
     max_price: Optional[str] | None = Query(None)
-):
+) -> HTMLResponse:
+    """
+    Renders product catalog page
+
+    Args;
+        \n\n
+        request:
+        session: Database session dependency
+        name: Partial name filter (case-insensitive)
+        min_price: minimum price filter
+        max_price: maximum price filter
+
+    Returns:
+        \n\n
+        HTMLResponse: rendered products.html template
+    """    
     statement = select(Product)
-    min_val = None
-    max_val = None
+    min_val   = None
+    max_val   = None
 
 
     if name and name.strip():
         statement = statement.where(func.lower(Product.name).contains(name.lower()))
-
 
     if max_price is not None and max_price.strip():
         try:
