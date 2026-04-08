@@ -15,7 +15,6 @@ from fastapi.security import OAuth2PasswordBearer
 from contextlib import asynccontextmanager
 
 from src.routers import auth, products, frontend
-from src.routers import frontend, products
 from src.data.db import init_database
 
 from typing import Annotated
@@ -37,8 +36,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="Title Placeholder (main)",
-    description="Description Placeholder (main)",
+    title="Product Manager",
+    description="",
     lifespan=lifespan
 )
 
